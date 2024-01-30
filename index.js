@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const db = require('./src/db');
+const md5 = require("md5");
 
 // Efetua o parse do application/json
 const bodyParser = require('body-parser');
@@ -38,7 +39,7 @@ var corsOptionsDelegate = function (req, callback) {
 
 const validarJWT = (req, res, next) => {
   const jwt = req.headers['authorization'];
-  const chavePrivada = "consolelog.com.br";
+  const chavePrivada = "infocomrobson.com.br";
 
   //efetuar a validação do JWT
   const jwtService = require("jsonwebtoken");
@@ -65,6 +66,46 @@ app.listen(3000, () => {
   console.log("Aplicacao em execucao");
 });
 
+// app.post(
+//     "/login", cors(corsOptionsDelegate),
+//     async (req, res) => {
+//         // ************************************
+//         // Observação: o comando abaixo
+//         // const { usuario, senha } = req.body;
+//         // é a mesma coisa que digitar:
+//         // const usuario = req.body.usuario;
+//         // const senha = req.body.senha;
+//         // ************************************
+//         const { usuario, senha } = req.body;
+  
+//         if (usuario === "marcelo" && senha === "123456") {
+//             const jwt = require("jsonwebtoken");
+//             const dadosUsuario = {
+//                 nome: "marcelo",
+//                 email: "teste@gmail.com",
+//                 id: 1
+//             };
+            
+//             const chavePrivada = "consolelog.com.br";
+  
+//             jwt.sign(dadosUsuario, chavePrivada, (err, token) => {
+//                 if (err) {
+//                     res
+//                         .status(500)
+//                         .json({ mensagem: "Erro ao gerar o JWT" });
+  
+//                     return;
+//                 }
+//                 res.set("x-access-token", token).json({"status":true, "token": token});
+//                 res.end();
+//             });
+//         } else {
+//             res.status(401).json({"status":false});
+//             res.end();
+//         }
+//     }
+//   );
+
 app.post(
   "/login", cors(corsOptionsDelegate),
   async (req, res) => {
@@ -76,27 +117,25 @@ app.post(
       // const senha = req.body.senha;
       // ************************************
       const { usuario, senha } = req.body;
+        const login = await db.login(usuario, md5(senha));
 
-      if (usuario === "marcelo" && senha === "123456") {
+      if (login[0]!=null) {
           const jwt = require("jsonwebtoken");
           const dadosUsuario = {
-              nome: "marcelo",
-              email: "teste@gmail.com",
-              id: 1
+              nome: login[0].name,
+              email: login[0].email,
+              id: login[0].id
           };
           
-          const chavePrivada = "consolelog.com.br";
+          const chavePrivada = "infocomrobson.com.br";
 
           jwt.sign(dadosUsuario, chavePrivada, (err, token) => {
               if (err) {
                   res
                       .status(500)
                       .json({ mensagem: "Erro ao gerar o JWT" });
-
                   return;
               }
-
-              // console.log(token);
               res.set("x-access-token", token).json({"status":true, "token": token});
               res.end();
           });
@@ -109,7 +148,14 @@ app.post(
 
 app.get(
   "/user", validarJWT,
-  (req, res) => {
+  async (req, res) => {
+    const login = await db.login("robsonfdfarias@gmail.com", md5("manaus123"));
+    if(login[0]!=null){
+        // console.log(login)
+        console.log(login[0].name)
+    }else{
+        console.log('Não tem conteúdo')
+    }
           res.json(req.userInfo);
   }
 );

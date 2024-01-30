@@ -47,4 +47,10 @@ const deleteUser = async (id) => {
     return {'status': ok};
 }
 
-module.exports = {allUsers, pesUserId, create, pesUserName, updateUser, deleteUser};
+const login = async (email, pass) => {
+    const [query] = await connection.query('SELECT * FROM apiJavascript.login WHERE email=? AND password=?', [email, pass]);
+    // console.log(query);
+    return (query);
+}
+
+module.exports = {allUsers, pesUserId, create, pesUserName, updateUser, deleteUser, login};
